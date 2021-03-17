@@ -1,7 +1,8 @@
 import "./style.css";
 import "./lib/translitration-input-bundle";
 import "jq-console";
-
+import { make_js, parse, TokenStream, StreamObject } from "./lib/geez";
+import "./lib/primitives";
 const editor = $("#editor");
 enableTransliteration(editor[0], "am");
 
