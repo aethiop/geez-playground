@@ -1,3 +1,6 @@
+[Geez Playground](https://geez.marda.studio)
+
+
 ```
 ፊብ = ሥራ (መ ) {
 			ከሆነ (መ < 2) {
