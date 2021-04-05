@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#editor {
+	background-attachment: local;
+	background-repeat: no-repeat;
+	padding-left: 35px;
+	padding-top: 10px;
+	border-color: #ccc;
+}
+
+#console {
+	position: relative;
+	height: 100%;
+	font-weight: bold;
+	font-size: medium;
+	color: azure;
+}
+.jqconsole::-webkit-scrollbar {
+	display: none;
+}
+
+/* The inner console element. */
+.jqconsole {
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
+	overflow: hidden;
+
+	padding: 10px;
+}
+/* The cursor. */
+.jqconsole-cursor {
+	background-color: rgb(153, 153, 153);
+}
+/* The cursor color when the console looses focus. */
+.jqconsole-blurred .jqconsole-cursor {
+	background-color: rgb(119, 119, 119);
+}
+/* The current prompt text color */
+.jqconsole-prompt {
+	color: rgb(247, 255, 247);
+}
+/* The command history */
+.jqconsole-old-prompt {
+	color: rgb(134, 134, 134);
+	font-weight: normal;
+}
+/* The text color when in input mode. */
+.jqconsole-input {
+	color: #dd0;
+}
+/* Previously entered input. */
+.jqconsole-old-input {
+	color: #bb0;
+	font-weight: normal;
+}
+/* The text color of the output. */
+.jqconsole-output {
+	color: white;
+}
