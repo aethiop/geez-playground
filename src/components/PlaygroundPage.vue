@@ -124,7 +124,7 @@
 				</div>
 			</div>
 			<!-- Editor and Console -->
-			<div ref="code" class="flex flex-col flex-auto px-2">
+			<div class="flex flex-col flex-auto px-2">
 				<!-- Open files -->
 				<ul class="list-reset flex">
 					<li class="mr-1">
