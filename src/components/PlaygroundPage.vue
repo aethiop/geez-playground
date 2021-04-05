@@ -189,14 +189,7 @@
 </template>
 <script setup>
 	import { transcrire } from "../lib/transcrire.js";
-	import {
-		parse,
-		TokenStream,
-		StreamObject,
-		make_js,
-		to_cps,
-		Execute,
-	} from "../lib/geez";
+	import { parse, TokenStream, StreamObject, make_js } from "../lib/geez";
 	import "../lib/primitives";
 	import "../lib/geez_paper";
 	import Split from "split.js";
