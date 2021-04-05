@@ -46,7 +46,7 @@
 
 		<div class="h-full p-2 flex flex-row">
 			<!-- Files -->
-			<div ref="files" class="w-64 bg-dracula-dark rounded-md">
+			<div class="w-64 bg-dracula-dark rounded-md">
 				<div class="flex flex-row justify-between p-4">
 					<h1 class="text-white text-center text-lg font-bold">
 						ፋይሎች
