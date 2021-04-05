@@ -178,10 +178,7 @@
 				</div>
 			</div>
 			<!-- Preview -->
-			<div
-				ref="preview"
-				class="w-96 border-2  border-gray-600 rounded-md"
-			>
+			<div class="w-96 border-2  border-gray-600 rounded-md">
 				<canvas id="canvas"></canvas>
 			</div>
 		</div>
