@@ -1,4 +1,4 @@
-# [ግዕዝ / Ge'ez](https://geez.marda.studio) - Amharic programming language.
+# [ግዕዝ / Ge'ez (beta)](https://geez.marda.studio) - Amharic programming language.
 
 Geez is simple programming language which is built on top of JavaScript. An online IDE is also provided [here](https://geez.marda.studio). The website or even the language is not finished yet but has many functionalities which can be used.
 
