@@ -1,6 +1,5 @@
 export const transcrire = (e) => {
 	var char = e.target.value;
-	console.log(e.target.value);
 	char = char.replace(/[äâ]/g, "e");
 	char = char.replace(/[êëē]/g, "é");
 

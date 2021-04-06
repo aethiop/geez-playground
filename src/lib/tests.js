@@ -43,3 +43,19 @@
 
 አንቀሳቅስ()፤
 `;
+
+`
+
+ሰልፍ = ጃስ "function(k) {
+	k([].slice.call(arguments, 1));
+};"
+ስንት =  ጃስ "function(k, thing) {
+	k(thing.length);
+};"
+ሰልፍ_የት =  ጃስ "function(k, array, index) {
+	k(array[index]);
+};"
+ሰልፍ_ቀይር =  ጃስ "function(k, array, index, newValue) {
+	k((array[index] = newValue));
+};"
+`;

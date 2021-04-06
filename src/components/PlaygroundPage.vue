@@ -2,7 +2,10 @@
 	<div class="bg-dracula-light flex flex-col h-screen">
 		<!-- Navigation Bar -->
 		<nav class="flex items-center justify-between m-2">
-			<div class="flex flex-row items-center">
+			<a
+				class="flex flex-row items-center"
+				href="https://www.github.com/aethiop/geez-playground"
+			>
 				<svg
 					class="w-7 h-7 "
 					viewBox="0 0 50 50"
@@ -19,8 +22,8 @@
 				</svg>
 				<h2 class="ml-2 font-bold leading-7 text-white">
 					ግዕዝ
-				</h2>
-			</div>
+				</h2></a
+			>
 			<div>
 				<span class="ml-3">
 					<button
