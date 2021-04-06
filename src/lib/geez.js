@@ -49,7 +49,7 @@ function StreamObject(input) {
  */
 function TokenStream(input) {
 	var current = null;
-	var keywords = " ሰይም ከሆነ ከዛ ካልሆነ >>> እውነት ሀሰት ጃስ ";
+	var keywords = " ሰይም ከሆነ ከዛ ካልሆነ ስራ እውነት ሀሰት ጃስ ";
 	return {
 		next: next,
 		peek: peek,
@@ -63,7 +63,7 @@ function TokenStream(input) {
 		return /[0-9]/i.test(ch);
 	}
 	function is_id_start(ch) {
-		return /[\u1200-\u135f\u1369-\u137ca-zA-Z0-9_>>>]/u.test(ch);
+		return /[\u1200-\u135f\u1369-\u137ca-zA-Z0-9_ስራ]/u.test(ch);
 	}
 	function is_id(ch) {
 		return is_id_start(ch) || "?!<>=0123456789".indexOf(ch) >= 0;
@@ -350,7 +350,7 @@ function parse(input) {
 			if (is_kw("ከሆነ")) return parse_if();
 			if (is_kw("እውነት") || is_kw("ሀሰት")) return parse_bool();
 			if (is_kw("ጃስ")) return parse_raw();
-			if (is_kw(">>>")) {
+			if (is_kw("ስራ") || is_kw("ሥራ")) {
 				input.next();
 				return parse_lambda();
 			}
@@ -411,7 +411,7 @@ function make_js(exp) {
 			case "raw":
 				return js_raw(exp);
 			default:
-				term.Write(JSON.stringify(exp) + "\n", "jqconsole-error");
+				term.Write(JSON.stringify(exp), "jqconsole-error");
 				throw new Error(
 					"Dunno how to make_js for " + JSON.stringify(exp)
 				);
