@@ -479,11 +479,11 @@ export const transcrire = (e) => {
 	char = char.replace(/ኣኣ/g, "ኧ");
 
 	//ponctuation
-	char = char.replace(/\\-/g, "፡");
+	char = char.replace(/\\-/g, "፧");
 	char = char.replace(/\\\./g, "።");
 	char = char.replace(/\,/g, "፣");
 	char = char.replace(/\;/g, "፤");
-	char = char.replace(/\:/g, "፥");
+	char = char.replace(/\\\:/g, "፥");
 	char = char.replace(/\\\!/g, "፦");
 	char = char.replace(/\\\//g, "፨");
 

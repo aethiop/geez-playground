@@ -60,13 +60,13 @@ function TokenStream(input) {
 		return keywords.indexOf(" " + x + " ") >= 0;
 	}
 	function is_digit(ch) {
-		return /[0-9]/i.test(ch);
+		return "-0123456789".indexOf(ch) >= 0;
 	}
 	function is_id_start(ch) {
-		return /[\u1200-\u135f\u1369-\u137ca-zA-Z0-9_ስራ]/u.test(ch);
+		return /[\u1200-\u135f\u1369-\u137ca-zA-Z0-9_]/u.test(ch);
 	}
 	function is_id(ch) {
-		return is_id_start(ch) || "?!<>=0123456789".indexOf(ch) >= 0;
+		return is_id_start(ch) || "?!-<:>=0123456789".indexOf(ch) >= 0;
 	}
 	function is_op_char(ch) {
 		return "+-*/%=&|<>!".indexOf(ch) >= 0;
@@ -180,10 +180,9 @@ function parse(input) {
 		"!=": 7,
 		"+": 10,
 		"-": 10,
-		"*": 15,
-		"/": 15,
-		"%": 15,
-		"**": 16,
+		"*": 20,
+		"/": 20,
+		"%": 20,
 	};
 	return parse_toplevel();
 	function is_punc(ch) {
