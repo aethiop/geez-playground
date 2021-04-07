@@ -30,7 +30,7 @@ Are used to store information on the memory by refering them with their correspo
 `Functions are also declared as a variable like below`
 
 ```
-ስም_ከነ_አባት = >>> (ስም፣ አባት)
+ስም_ከነ_አባት = ስራ (ስም፣ አባት)
 {
 	ፃፍ("መረጃ")፤
 	ፃፍ("ስም፥ "፣ ስም)፤
@@ -100,7 +100,7 @@ Operators are special tokens that represent computations like addition, multipli
 #
 
 ```
-ስራ = >>> ()
+ስራ = ስራ ()
 	{
 		ፃፍ("1")፤    # Expression 1
 		ፃፍ("2")፤	# Expression 2
@@ -115,7 +115,7 @@ Functions are blocks of code which can be executed after defining using `>>>`
 Functions can have arguments inside the parentheses.
 
 ```
-ደምር_7 = >>> (ሀ)
+ደምር_7 = ስራ (ሀ)
 	{
 		ፃፍ(ሀ + 7)፤
     }፤
@@ -126,7 +126,7 @@ Functions can have arguments inside the parentheses.
 Can also have multiple arguments separated by comma or `፣`
 
 ```
-ደምር = >>> (ሀ፣ ለ)
+ደምር = ስራ (ሀ፣ ለ)
 	{
 		ፃፍ(ሀ + ለ)፤
 	}፤
@@ -161,7 +161,7 @@ True 										False
 ```
 
 ```
-ፊብ = >>> (ሀ) { ከሆነ ሀ < 2 ከዛ ሀ ካልሆነ ፊብ(ሀ - 1) + ፊብ(ሀ-2) }፤
+ፊብ = ስራ (ሀ) { ከሆነ ሀ < 2 ከዛ ሀ ካልሆነ ፊብ(ሀ - 1) + ፊብ(ሀ-2) }፤
 ፃፍ(ፊብ(7))፤
 ```
 
@@ -174,7 +174,7 @@ True 										False
 Loops can be implemented recursively
 
 ```
-ዘርዝር = >>> (ሀ፣ ለ)
+ዘርዝር = ስራ (ሀ፣ ለ)
 		{
         	ፃፍ(ሀ)፤
         	ከሆነ (ሀ < ለ) {
