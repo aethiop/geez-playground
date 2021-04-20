@@ -47,7 +47,7 @@
 			</div>
 		</nav>
 
-		<div class="h-full p-2 flex flex-row">
+		<div class="h-full overflow-hidden p-2 flex flex-row">
 			<!-- Files -->
 			<div class="w-64 bg-dracula-dark rounded-md">
 				<div class="flex flex-row justify-between p-4">
@@ -127,7 +127,7 @@
 				</div>
 			</div>
 			<!-- Editor and Console -->
-			<div class="flex flex-col flex-auto px-2">
+			<div class="flex h-full flex-col flex-auto px-2 overflow-auto">
 				<!-- Open files -->
 				<ul class="list-reset flex">
 					<li class="mr-1">
@@ -138,74 +138,116 @@
 						>
 					</li>
 				</ul>
-
-				<!-- Editor -->
 				<div
-					class="h-full overflow-hidden pb-1"
-					ref="codemirror"
-					@keyup="transcrire"
-				></div>
-
-				<!-- Console -->
-				<div
-					ref="terminalContainer"
-					class="mt-1 w-full h-8 flex flex-col bg-black rounded-md "
+					class="flex flex-auto w-full h-full overflow-y-hidden space-x-1"
 				>
+					<!-- Editor -->
 					<div
-						class="w-full h-8 justify-between bg-dracula-dark flex flex-row  rounded-t-md "
+						class="h-full box-border overflow-hidden"
+						ref="codemirror"
+						@keyup="transcrire"
+					></div>
+
+					<!-- Console -->
+					<div
+						ref="terminalContainer"
+						class="flex flex-col bg-black rounded-md "
 					>
-						<h1 class="p-2 text-sm text-gray-300">ኮንሶል</h1>
-						<button
-							type="button"
-							id="clear"
-							@click="clearConsole"
-							class=" focus:outline-none p-2 ml-auto"
+						<div
+							class="justify-between bg-dracula-dark flex flex-row  rounded-t-md "
 						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="w-4 h-4 fill-current text-red-400"
-								viewBox="0 0 512 512"
+							<h1 class="p-2 text-sm text-gray-300">ኮንሶል</h1>
+							<button
+								type="button"
+								id="clear"
+								@click="clearConsole"
+								class=" focus:outline-none p-2 ml-auto"
 							>
-								<title>Trash</title>
-								<path
-									d="M296 64h-80a7.91 7.91 0 00-8 8v24h96V72a7.91 7.91 0 00-8-8z"
-									fill="none"
-								/>
-								<path
-									d="M432 96h-96V72a40 40 0 00-40-40h-80a40 40 0 00-40 40v24H80a16 16 0 000 32h17l19 304.92c1.42 26.85 22 47.08 48 47.08h184c26.13 0 46.3-19.78 48-47l19-305h17a16 16 0 000-32zM192.57 416H192a16 16 0 01-16-15.43l-8-224a16 16 0 1132-1.14l8 224A16 16 0 01192.57 416zM272 400a16 16 0 01-32 0V176a16 16 0 0132 0zm32-304h-96V72a7.91 7.91 0 018-8h80a7.91 7.91 0 018 8zm32 304.57A16 16 0 01320 416h-.58A16 16 0 01304 399.43l8-224a16 16 0 1132 1.14z"
-								/>
-							</svg>
-						</button>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="w-4 h-4 fill-current text-red-400"
+									viewBox="0 0 512 512"
+								>
+									<title>Trash</title>
+									<path
+										d="M296 64h-80a7.91 7.91 0 00-8 8v24h96V72a7.91 7.91 0 00-8-8z"
+										fill="none"
+									/>
+									<path
+										d="M432 96h-96V72a40 40 0 00-40-40h-80a40 40 0 00-40 40v24H80a16 16 0 000 32h17l19 304.92c1.42 26.85 22 47.08 48 47.08h184c26.13 0 46.3-19.78 48-47l19-305h17a16 16 0 000-32zM192.57 416H192a16 16 0 01-16-15.43l-8-224a16 16 0 1132-1.14l8 224A16 16 0 01192.57 416zM272 400a16 16 0 01-32 0V176a16 16 0 0132 0zm32-304h-96V72a7.91 7.91 0 018-8h80a7.91 7.91 0 018 8zm32 304.57A16 16 0 01320 416h-.58A16 16 0 01304 399.43l8-224a16 16 0 1132 1.14z"
+									/>
+								</svg>
+							</button>
+						</div>
+						<div
+							class=" h-full"
+							ref="terminal"
+							@keyup="transcrire"
+							id="console"
+						></div>
 					</div>
-					<div class=" h-full" ref="terminal" id="console"></div>
 				</div>
-			</div>
-			<!-- Preview -->
-			<div class="w-96 border-2  border-gray-600 rounded-md">
-				<canvas id="canvas"></canvas>
 			</div>
 		</div>
 	</div>
 </template>
 <script setup>
 	import { transcrire } from "../lib/transcrire.js";
-	import { parse, TokenStream, StreamObject, make_js } from "../lib/geez";
-	import "../lib/primitives";
-	import "../lib/geez_paper";
+	import {
+		parse,
+		TokenStream,
+		StreamObject,
+		Environment,
+		evaluate,
+		Execute,
+	} from "../lib/geez";
+	import "jq-console";
+	import "../lib/geez-mode";
 	import Split from "split.js";
 
-	import { ref, onMounted, nextTick } from "vue";
+	import { ref, onMounted } from "vue";
 	const codemirror = ref(null);
 	const terminalContainer = ref(null);
 	const terminal = ref(null);
 	var term;
 
 	var val = "";
-
+	function geezify(str) {
+		if (typeof str == "number") {
+			return str
+				.toString()
+				.replace(/\\1/g, "፩")
+				.replace(/\\2/g, "፪")
+				.replace(/\\3/g, "፫")
+				.replace(/\\4/g, "፬")
+				.replace(/\\5/g, "፭")
+				.replace(/\\6/g, "፮")
+				.replace(/\\7/g, "፯")
+				.replace(/\\8/g, "፰")
+				.replace(/\\9/g, "፱")
+				.replace(/\\፩0/g, "፲")
+				.replace(/\\፪0/g, "፳")
+				.replace(/\\፫0/g, "፴")
+				.replace(/\\፬0/g, "፵")
+				.replace(/\\፭0/g, "፶")
+				.replace(/\\፮0/g, "፷")
+				.replace(/\\፯0/g, "፸")
+				.replace(/\\፰0/g, "፹")
+				.replace(/\\፱0/g, "፺")
+				.replace(/\\፲0/g, "፻")
+				.replace(/\\፳0/g, "፪፻")
+				.replace(/\\፺0/g, "፱፻")
+				.replace(/\\፻0/g, "፲፻")
+				.replace(/\\፲፻0/g, "፼");
+		} else if (str === false) {
+			return "ሀሰት";
+		} else {
+			return str;
+		}
+	}
 	onMounted(() => {
 		Split([codemirror.value, terminalContainer.value], {
 			sizes: [75, 25],
-			direction: "vertical",
 			gutterSize: 7,
 			snapOffset: 0,
 		});
@@ -216,43 +258,129 @@
 			value: val,
 			theme: "dracula",
 			scrollbarStyle: "null",
-			viewportMargin: Infinity,
+			mode: "geez",
 		});
 		_editor.on("change", () => {
 			val = _editor.getValue();
 		});
 		term = $(terminal.value).jqconsole();
+
 		window.term = term;
 	});
 
 	const clearConsole = () => {
-		console.log(term);
 		term.Reset();
 	};
 
-	const generateJS = (code) => {
-		var ast = parse(TokenStream(StreamObject(code)));
+	// const generateJS = (code) => {
+	// 	var ast = parse(TokenStream(StreamObject(code)));
 
-		var code_js = make_js(ast);
-		return Function(code_js);
-	};
+	// 	var code_js = make_js(ast);
+	// 	return Function(code_js);
+	// };
 
 	const runCode = () => {
-		generateJS(val)();
+		var geezCode = val;
+		var ast = parse(TokenStream(StreamObject(geezCode)));
+		var globalEnv = new Environment();
+
+		globalEnv.def("ፃፍ", function(k) {
+			term.Write([].slice.call(arguments, 1).join(" ") + "\n");
+			Execute(k, [false]);
+		});
+
+		globalEnv.def("ተቀበል", function(k, text) {
+			term.Write(geezify(text));
+			term.SetPromptLabel("");
+			term.Prompt(true, function(input) {
+				k(input);
+			});
+		});
+		globalEnv.def("ተኛ", function(k, milliseconds) {
+			setTimeout(function() {
+				Execute(k, [false]);
+			}, milliseconds);
+		});
+		globalEnv.def("ወደ-ቁጥር", function(k, num) {
+			Execute(k(parseInt(num)), [false]);
+		});
+
+		globalEnv.def("ይህቀጥል", function(k, f) {
+			f(k, function CC(discarded, ret) {
+				k(ret);
+			});
+		});
+		globalEnv.def("ርዝመት", function(k, thing) {
+			k(thing.length);
+		});
+		globalEnv.def("ሰልፍ", function(k) {
+			k([].slice.call(arguments, 1));
+		});
+		globalEnv.def("ከሰልፍ", function(k, array, index) {
+			Execute(k(array[index]), [false]);
+		});
+		globalEnv.def("ሰልፍ!", function(k, array, index, val) {
+			Execute(k((array[index] = val)), [false]);
+		});
+
+		function Cons(car, cdr) {
+			this.car = car;
+			this.cdr = cdr;
+		}
+		globalEnv.def("ክፍል?", function(k, thing) {
+			k(thing instanceof Cons);
+		});
+		globalEnv.def("ክፍል", function(k, car, cdr) {
+			k(new Cons(car, cdr));
+		});
+		globalEnv.def("ብጀ", function(k, cell) {
+			k(cell.car);
+		});
+		globalEnv.def("ብቀ", function(k, cell) {
+			k(cell.cdr);
+		});
+		globalEnv.def("ብጀ!", function(k, cell, car) {
+			k((cell.car = car));
+		});
+		globalEnv.def("ብቀ!", function(k, cell, cdr) {
+			k((cell.cdr = cdr));
+		});
+		globalEnv.def("ባዶ", function(k) {
+			const NILL = {};
+			NILL.car = NILL;
+			NILL.cdr = NILL;
+			k(NILL);
+		});
+
+		// ርዝመት
+		// ሰልፍ
+		// ከሰልፍ
+		// ሰልፍ!
+		// ክፍል
+		// ብጀ
+		// ብቀ
+		Execute(evaluate, [
+			ast,
+			globalEnv,
+			function() {
+				term.Write("\n");
+			},
+		]);
 	};
 </script>
 <style>
 	.gutter {
 		margin: auto;
-		width: 3rem;
+		height: 3rem;
 		border-radius: 0.375rem;
 		background-color: #eee;
 		background-repeat: no-repeat;
 		background-position: 80%;
 	}
-	.gutter.gutter-vertical {
-		height: 3px;
-		background: rgba(75, 85, 99, 0.6) !important;
+	.gutter.gutter-horizontal {
+		width: 3px;
+		height: 3rem !important;
+		background: rgba(102, 113, 129, 0.6) !important;
 		cursor: row-resize;
 	}
 	.CodeMirror {
@@ -284,14 +412,14 @@
 		font-size: 0.875rem /* 14px */;
 		line-height: 1.25rem /* 20px */;
 	}
-	/* The cursor.
+	/* The cursor. */
 	.jqconsole-cursor {
 		background-color: rgb(153, 153, 153);
 	}
-	/* The cursor color when the console looses focus. */
-	/* .jqconsole-blurred .jqconsole-cursor {
+	/*The cursor color when the console looses focus. */
+	.jqconsole-blurred .jqconsole-cursor {
 		background-color: rgb(119, 119, 119);
-	} */
+	}
 	/* The current prompt text color */
 	.jqconsole-prompt {
 		font-size: 0.875rem /* 14px */;

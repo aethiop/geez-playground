@@ -60,7 +60,7 @@ function TokenStream(input) {
 		return keywords.indexOf(" " + x + " ") >= 0;
 	}
 	function is_digit(ch) {
-		return "-0123456789".indexOf(ch) >= 0;
+		return /[0-9]/i.test(ch);
 	}
 	function is_id_start(ch) {
 		return /[\u1200-\u135f\u1369-\u137ca-zA-Z0-9_]/u.test(ch);
@@ -110,7 +110,7 @@ function TokenStream(input) {
 			if (escaped) {
 				str += ch;
 				escaped = false;
-			} else if (ch == "\\") {
+			} else if (ch == "#") {
 				escaped = true;
 			} else if (ch == end) {
 				break;
@@ -172,13 +172,16 @@ function parse(input) {
 		"=": 1,
 		"||": 2,
 		"&&": 3,
-		"<": 7,
-		">": 7,
-		"<=": 7,
-		">=": 7,
 		"==": 7,
 		"!=": 7,
+		"<": 8,
+		">": 8,
+		"<=": 8,
+		">=": 8,
 		"+": 10,
+		"<<": 13,
+		">>": 13,
+		">>>": 13,
 		"-": 10,
 		"*": 20,
 		"/": 20,
@@ -477,5 +480,249 @@ function make_js(exp) {
 		return js(exp.func) + "(" + exp.args.map(js).join(", ") + ")";
 	}
 }
+var STACKLEN;
+function GUARD(f, args) {
+	if (--STACKLEN < 0) throw new Continuation(f, args);
+}
+function Continuation(f, args) {
+	this.f = f;
+	this.args = args;
+}
 
-export { make_js, parse, TokenStream, StreamObject };
+function Execute(f, args) {
+	// eslint-disable-next-line no-constant-condition
+	while (true)
+		try {
+			STACKLEN = 200;
+			return f?.apply(null, args);
+		} catch (ex) {
+			if (ex instanceof Continuation) (f = ex.f), (args = ex.args);
+			else throw ex;
+		}
+}
+function Environment(parent) {
+	this.vars = Object.create(parent ? parent.vars : null);
+	this.parent = parent;
+}
+Environment.prototype = {
+	extend: function() {
+		return new Environment(this);
+	},
+	lookup: function(name) {
+		var scope = this;
+		while (scope) {
+			if (Object.prototype.hasOwnProperty.call(scope.vars, name))
+				return scope;
+			scope = scope.parent;
+		}
+	},
+	get: function(name) {
+		if (name in this.vars) return this.vars[name];
+		term.Write("ያልተሰየመ ስም " + name + "\n", "jqconsole-error");
+		throw new Error("Undefined variable " + name);
+	},
+	set: function(name, value) {
+		var scope = this.lookup(name);
+		// let's not allow defining globals from a nested environment
+		if (!scope && this.parent) {
+			term.Write("ያልተሰየመ ስም" + name + "\n", "jqconsole-error");
+
+			throw new Error("Undefined variable " + name);
+		}
+		return ((scope || this).vars[name] = value);
+	},
+	def: function(name, value) {
+		return (this.vars[name] = value);
+	},
+};
+
+function evaluate(exp, env, callback) {
+	GUARD(evaluate, arguments);
+	switch (exp.type) {
+		case "num":
+		case "str":
+		case "bool":
+			callback(exp.value);
+			return;
+
+		case "var":
+			callback(env.get(exp.value));
+			return;
+
+		case "assign":
+			if (exp.left.type != "var")
+				throw new Error("Cannot assign to " + JSON.stringify(exp.left));
+			evaluate(exp.right, env, function CC(right) {
+				GUARD(CC, arguments);
+				callback(env.set(exp.left.value, right));
+			});
+			return;
+
+		case "binary":
+			evaluate(exp.left, env, function CC(left) {
+				GUARD(CC, arguments);
+				evaluate(exp.right, env, function CC(right) {
+					GUARD(CC, arguments);
+					callback(apply_op(exp.operator, left, right));
+				});
+			});
+			return;
+
+		case "let":
+			(function loop(env, i) {
+				GUARD(loop, arguments);
+				if (i < exp.vars.length) {
+					var v = exp.vars[i];
+					if (v.def)
+						evaluate(v.def, env, function CC(value) {
+							GUARD(CC, arguments);
+							var scope = env.extend();
+							scope.def(v.name, value);
+							loop(scope, i + 1);
+						});
+					else {
+						var scope = env.extend();
+						scope.def(v.name, false);
+						loop(scope, i + 1);
+					}
+				} else {
+					evaluate(exp.body, env, callback);
+				}
+			})(env, 0);
+			return;
+
+		case "lambda":
+			callback(make_lambda(env, exp));
+			return;
+
+		case "if":
+			evaluate(exp.cond, env, function CC(cond) {
+				GUARD(CC, arguments);
+				if (cond !== false) evaluate(exp.then, env, callback);
+				else if (exp.else) evaluate(exp.else, env, callback);
+				else callback(false);
+			});
+			return;
+
+		case "prog":
+			(function loop(last, i) {
+				GUARD(loop, arguments);
+				if (i < exp.prog.length)
+					evaluate(exp.prog[i], env, function CC(val) {
+						GUARD(CC, arguments);
+						loop(val, i + 1);
+					});
+				else {
+					callback(last);
+				}
+			})(false, 0);
+			return;
+
+		case "call":
+			evaluate(exp.func, env, function CC(func) {
+				GUARD(CC, arguments);
+				(function loop(args, i) {
+					GUARD(loop, arguments);
+					if (i < exp.args.length)
+						evaluate(exp.args[i], env, function CC(arg) {
+							GUARD(CC, arguments);
+							args[i + 1] = arg;
+							loop(args, i + 1);
+						});
+					else {
+						func.apply(null, args);
+					}
+				})([callback], 0);
+			});
+			return;
+
+		default:
+			term.Write("ማስተናገድ አልተቻለም ፥ " + exp.type, "jqconsole-error");
+			throw new Error("ማስተናገድ አልተቻለም ፥ " + exp.type);
+	}
+}
+
+function make_lambda(env, exp) {
+	if (exp.name) {
+		env = env.extend();
+		env.def(exp.name, lambda);
+	}
+	function lambda(callback) {
+		GUARD(lambda, arguments);
+
+		var names = exp.vars;
+		var scope = env.extend();
+		for (var i = 0; i < names.length; ++i)
+			scope.def(
+				names[i],
+				i + 1 < arguments.length ? arguments[i + 1] : false
+			);
+
+		evaluate(exp.body, scope, callback);
+	}
+	return lambda;
+}
+
+function apply_op(op, a, b) {
+	function num(x) {
+		if (typeof x != "number") {
+			term.Write(
+				"ቁጥር በመጠበቅ ላይ ግን የቀረበው ፦ " + x + "\n",
+				"jqconsole-error"
+			);
+			throw new Error("Expected number but got " + x);
+		}
+		return x;
+	}
+	function div(x) {
+		if (num(x) == 0) {
+			term.Write("ቁጥር በ 0 ማካፈል አይቻልም" + "\n", "jqconsole-error");
+			throw new Error("Divide by zero");
+		}
+		return x;
+	}
+	switch (op) {
+		case "+":
+			return num(a) + num(b);
+		case "-":
+			return num(a) - num(b);
+		case "*":
+			return num(a) * num(b);
+		case "/":
+			return num(a) / div(b);
+		case "%":
+			return num(a) % div(b);
+		case "&&":
+			return a !== false && b;
+		case "||":
+			return a !== false ? a : b;
+		case "<":
+			return num(a) < num(b);
+		case ">":
+			return num(a) > num(b);
+		case "<=":
+			return num(a) <= num(b);
+		case "<<":
+			return num(a) << num(b);
+		case ">>":
+			return num(a) >> num(b);
+		case ">>>":
+			return num(a) >>> num(b);
+		case ">=":
+			return num(a) >= num(b);
+		case "==":
+			return a === b;
+		case "!=":
+			return a !== b;
+	}
+	throw new Error("Can't apply operator " + op);
+}
+export {
+	Environment,
+	parse,
+	TokenStream,
+	StreamObject,
+	evaluate,
+	Execute,
+	GUARD,
+};
